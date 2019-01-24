@@ -148,7 +148,7 @@ enet=cv.glmnet(X_train,Y_train,nlambda=100,alpha = alpha,nfolds=10)
 lambda=enet$lambda.1se; # lambda.1se or lambda.min
 beta$ENET=as.numeric(coef(enet,s=lambda)[-1])
 # Rescaled Elastic Net
-beta$ENET_rescaled=(1+lambda*(1-alpha)/2)*beta$ENET # Rescaled
+beta$ENET_rescaled=(1+lambda*(1-alpha)/2)*beta$ENET
 
 # Hybrid OLS-Lasso
 lasso_ols=glm.fit(X_train[,beta$Lasso>0],Y_train)
