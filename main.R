@@ -1,22 +1,3 @@
-# Notes -------------------------------------------------------------------
-
-## Different beta patterns (conditions):
-# Lasso, relaxed-lasso, lasso-OLS + horseshoe works well when a lot of zero predictors
-# Ridge, ENET + horseshoe works well when a lot of non-zero predictors, the lasso-based method tend to select non-zero coefficients randomly
-## Multicollinearity
-# Ridge, ENET + horseshoe works well
-## SNR
-# does not affect the rankings of the methods that much
-## other comments:
-# rescaling ENET coefficients usually a bad idea
-# for regularised horseshoe, misspecifications of p0 does not have a huge effect
-# Applying a cut-off based on CI does not really help horseshoe, but applying a cut-off on the mean (say mean effect less than 5% of sd(Y) do)
-# Applying a cut-off to the horseshoe does not necessarily help predictions (cf. large coef with large uncertainty set to 0...)
-# regularised horseshoe tend to have the best performance (coefficient estimation and predictions) regardless of the situation
-# And horseshoe provide uncertainty estimates: less interesting for prediction task but especially useful when we care about coefficient estimation since in the low SNR estimates are noisy (so we should at least be aware of this)
-
-# add this to my GitHub
-
 # Initialisation ----------------------------------------------------------
 
 rm(list=ls()) # Clear Workspace
