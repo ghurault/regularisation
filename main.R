@@ -106,18 +106,18 @@ if (condition=="3"){
 beta=data.frame(True=beta_true)
 
 if (!corr){
-  X_tot=matrix(rnorm(N_tot*D),nrow=N_tot,ncol=D) # add correlation structure
+  X_tot=matrix(rnorm(N_tot*D),nrow=N_tot,ncol=D)
 }else{
   diag <- rep(1,D) # eigenvalues
-  R <- rethinking::rlkjcorr(n=1,K=D,eta=.01) # LKJ distribution for correlation matrix
+  R <- rlkjcorr(n=1,K=D,eta=.01) # LKJ distribution for correlation matrix (rethinking package)
   
   Sigma <- R*tcrossprod(diag) # covariance matrix
   Mu=rep(0,D)
-  X_tot=MASS::mvrnorm(n=N_tot,rep(0,D),Sigma)
+  X_tot=mvrnorm(n=N_tot,rep(0,D),Sigma) # Multivariate normal (MASS package)
   # library(corrplot);corrplot(cor(X_tot)[1:10,1:10],method="color") # Visualise correlation in X
 }
 
-beta_pattern(beta_true)
+# beta_pattern(beta_true) # Visualise the patterns of betas
 
 X_train=X_tot[1:N_train,]
 X_test=X_tot[(N_train+1):N_tot,]
@@ -143,11 +143,12 @@ ridge=cv.glmnet(X_train,Y_train,nlambda=100,alpha = 0,nfolds=10)
 beta$Ridge=as.numeric(coef(ridge,s="lambda.1se")[-1])
 
 # Elastic Net
-enet=cv.glmnet(X_train,Y_train,nlambda=100,alpha = 0.5,nfolds=10)
-beta$ENET=as.numeric(coef(enet,s="lambda.1se")[-1])
-
+alpha=.5
+enet=cv.glmnet(X_train,Y_train,nlambda=100,alpha = alpha,nfolds=10)
+lambda=enet$lambda.1se; # lambda.1se or lambda.min
+beta$ENET=as.numeric(coef(enet,s=lambda)[-1])
 # Rescaled Elastic Net
-beta$ENET_rescaled=(1+enet$lambda.1se*(1-.5))*beta$ENET # Rescaled
+beta$ENET_rescaled=(1+lambda*(1-alpha)/2)*beta$ENET # Rescaled
 
 # Hybrid OLS-Lasso
 lasso_ols=glm.fit(X_train[,beta$Lasso>0],Y_train)
@@ -196,11 +197,11 @@ beta$Regularised_Horseshoe_NZ=s[,"mean"]*(abs(s[,"mean"])>sd(Y_train)*.05) # >1,
 
 ## Coefficient plot with CI
 # plot(fit,pars="beta")
-ggplot(data=beta,aes(x=True,y=Regularised_Horseshoe,ymin=Regularised_Horseshoe_Lower,ymax=Regularised_Horseshoe_Upper))+
-  geom_pointrange()+
-  geom_abline(intercept=0,slope=1,linetype="dashed")+
-  labs(x="True coefficient",y="Estimated coefficient")+
-  theme_bw(base_size = 15)
+# ggplot(data=beta,aes(x=True,y=Regularised_Horseshoe,ymin=Regularised_Horseshoe_Lower,ymax=Regularised_Horseshoe_Upper))+
+#   geom_pointrange()+
+#   geom_abline(intercept=0,slope=1,linetype="dashed")+
+#   labs(x="True coefficient",y="Estimated coefficient")+
+#   theme_bw(base_size = 15)
 
 # saveRDS(s,file="beta_cond1_snr2_corr_over.rds")
 
@@ -276,5 +277,3 @@ ggplot(data = tmp,aes(x=Position,colour=Label))+
   scale_x_continuous(breaks = seq(2,length(pos),4),labels = seq(1:nrow(s)))+
   labs(x="Index",y="Estimate",colour="")+
   theme_classic(base_size = 15)+theme(axis.text.x = element_text(angle=90),legend.position = "top")
-
-
