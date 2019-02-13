@@ -4,8 +4,6 @@ rm(list=ls()) # Clear Workspace
 
 set.seed(1)
 
-library(MASS)
-library(rethinking)
 library(glmnet)
 library(rstan)
 library(ggplot2)
@@ -21,7 +19,7 @@ N_test <- 1000 # Number of observations for testing
 D <- 80 # Number of dimensions/features
 beta_max <- 10 # Maximum value for beta (X is normalised)
 condition <- "3" # determines the patterns of beta
-corr <- TRUE # multicollinearity
+corr <- TRUE # multicollinearity (if TRUE, need rethinking and MASS packages)
 SNR <- 2 # 1,2,4 ;cf. sd(Y)/sigma
 
 beta_pattern <- function(beta){
@@ -54,11 +52,10 @@ plot_beta <- function(beta, residuals = FALSE, count = FALSE){
   # Ggplot of true vs estimated betas
   
   library(ggplot2)
-  library(reshape2)
   
   cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
   
-  tmp <- melt(beta, id.vars = "True", variable.name = "Method", value.name = "Coefficient")
+  tmp <- reshape2::melt(beta, id.vars = "True", variable.name = "Method", value.name = "Coefficient")
   if (!residuals){
     tmp$y <- tmp$Coefficient
   }else{
@@ -104,7 +101,7 @@ performance_chart <- function(df, ref){
   tmp$Method <- factor(tmp$Method, levels = tmp$Method[order(tmp$Mean, decreasing = TRUE)])
   
   # Confidence interval from bootstrapping
-  # library(boot);bootres <- boot(data=pred$OLS, statistic=function(data,indices){sqrt(mean((data[indices]-Y_test[indices])^2))},R=1000) # cf. bootstrap estimate
+  # bootres <- boot::boot(data = pred$OLS, statistic = function(data, indices){sqrt(mean((data[indices] - Y_test[indices])^2))}, R = 1000)
   
   ysup <- with(tmp, max(Mean + SE)) # where to plot the text and limits of the plot
   
@@ -139,12 +136,12 @@ if (!corr){
   X_tot <- matrix(rnorm(N_tot * D), nrow = N_tot, ncol = D)
 }else{
   diag <- rep(1, D) # eigenvalues
-  R <- rlkjcorr(n = 1, K = D, eta = .01) # LKJ distribution for correlation matrix (rethinking package)
+  R <- rethinking::rlkjcorr(n = 1, K = D, eta = .01) # LKJ distribution for correlation matrix
   
   Sigma <- R * tcrossprod(diag) # covariance matrix
   Mu <- rep(0, D)
-  X_tot <- mvrnorm(n = N_tot, rep(0, D), Sigma) # Multivariate normal (MASS package)
-  # library(corrplot);corrplot(cor(X_tot)[1:10, 1:10], method = "color") # Visualise correlation in X
+  X_tot <- MASS::mvrnorm(n = N_tot, rep(0, D), Sigma) # Multivariate normal
+  corrplot::corrplot(cor(X_tot)[1:10, 1:10], method = "color") # Visualise correlation in X
 }
 
 # beta_pattern(beta_true) # Visualise the patterns of betas
