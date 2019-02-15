@@ -146,8 +146,8 @@ if (!corr){
 
 # beta_pattern(beta_true) # Visualise the patterns of betas
 
-X_train <- X_tot[1:N_train,]
-X_test <- X_tot[(N_train + 1):N_tot,]
+X_train <- X_tot[1:N_train, ]
+X_test <- X_tot[(N_train + 1):N_tot, ]
 
 Y_tot <- X_tot %*% beta$True
 sigma <- sd(Y_tot) / SNR
@@ -298,7 +298,7 @@ tmp <- rbind(tmp, data.frame(True = beta_true, Mean_Estimate = s[, "mean"], Lowe
 
 tmp$Index <- 1:nrow(s)
 tmp$Label <- factor(tmp$Label, levels = c("Underestimating", "Oracle", "Overestimating"))
-tmp <- tmp[order(tmp$Index, tmp$Label),]
+tmp <- tmp[order(tmp$Index, tmp$Label), ]
 
 pos=1:(4 * nrow(s))
 tmp$Position=pos[pos %% 4 > 0] # add spacing between betas
