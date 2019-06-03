@@ -1,4 +1,4 @@
-Case study on regularisation methods for statistics and machine learning
+# Case study on regularisation methods for statistics and machine learning
 
 It includes:
 - Ordinary Least Squares
